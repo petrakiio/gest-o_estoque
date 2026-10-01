@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Sistema de gestão de produtos e estoque">
+  <title>Gestão de Produtos</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">GP</div>
+        <div><strong>Gestão</strong><span>de Produtos</span></div>
+      </div>
+      <nav>
+        <a class="nav-item active" href="#dashboard"><span>▦</span> Dashboard</a>
+        <a class="nav-item" href="#cadastro"><span>＋</span> Novo produto</a>
+      </nav>
+      <div class="sidebar-footer">
+        <span class="dot"></span> Dados salvos neste navegador
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">PAINEL ADMINISTRATIVO</p>
+          <h1>Gestão de produtos</h1>
+        </div>
+        <div class="export-actions"><button id="copyBtn" class="btn btn-light">⧉ Copiar relatório (texto)</button><button id="exportBtn" class="btn btn-primary">⇩ Exportar Relatório (.docx)</button></div>
+      </header>
+
+      <section id="dashboard" class="stats-grid">
+        <article class="stat-card"><span class="stat-icon">▤</span><div><small>Total de produtos</small><strong id="totalCount">0</strong></div></article>
+        <article class="stat-card"><span class="stat-icon">✓</span><div><small>Com estoque</small><strong id="stockCount">0</strong></div></article>
+        <article class="stat-card"><span class="stat-icon">▣</span><div><small>No catálogo</small><strong id="catalogCount">0</strong></div></article>
+        <article class="stat-card"><span class="stat-icon">!</span><div><small>Abaixo do mínimo</small><strong id="lowCount">0</strong></div></article>
+      </section>
+
+      <section id="cadastro" class="panel">
+        <div class="panel-heading">
+          <div><h2 id="formTitle">Cadastrar produto</h2><p>Preencha os dados do item e marque os status correspondentes.</p></div>
+          <button id="cancelEdit" class="btn btn-light hidden">Cancelar edição</button>
+        </div>
+
+        <form id="productForm" autocomplete="off">
+          <input type="hidden" id="editId">
+          <div class="form-grid">
+            <label>Produto *<input id="produto" required maxlength="120" placeholder="Nome do produto"></label>
+            <label>Quantidade *<input id="quantidade" required type="number" min="0" step="any" placeholder="0"></label>
+            <label>Fileira<input id="fileira" maxlength="30" placeholder="Ex.: A-01"></label>
+            <label>Estoque mínimo *<input id="minimo" required type="number" min="0" step="any" placeholder="0"></label>
+            <label>Estoque máximo *<input id="maximo" required type="number" min="0" step="any" placeholder="0"></label>
+          </div>
+          <div class="status-area">
+            <span class="status-label">Status do item</span>
+            <label class="check"><input type="checkbox" id="estoque"> <span>Estoque: <b>OK</b></span></label>
+            <label class="check"><input type="checkbox" id="catalogo"> <span>Catálogo: <b>OK</b></span></label>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit" id="saveBtn">Adicionar produto</button>
+            <button class="btn btn-light" type="reset" id="clearBtn">Limpar</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="panel-heading table-heading">
+          <div><h2>Produtos cadastrados</h2><p id="resultInfo">0 itens</p></div>
+          <input id="search" class="search" type="search" placeholder="⌕  Buscar produto ou fileira...">
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>Produto</th><th>Quantidade</th><th>Fileira</th><th>Mín.</th><th>Máx.</th><th>Estoque</th><th>Catálogo</th><th>Ações</th>
+            </tr></thead>
+            <tbody id="productTable"></tbody>
+          </table>
+          <div id="emptyState" class="empty">Nenhum produto cadastrado. Use o formulário acima para começar.</div>
+        </div>
+      </section>
+
+      <footer>Gestão de Produtos • armazenamento local • exportação 100% no navegador</footer>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/docx@9.5.1/build/index.umd.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
