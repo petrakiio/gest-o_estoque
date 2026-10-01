@@ -29,7 +29,15 @@
           <p class="eyebrow">PAINEL ADMINISTRATIVO</p>
           <h1>Gestão de produtos</h1>
         </div>
-        <div class="export-actions"><button id="copyBtn" class="btn btn-light">⧉ Copiar relatório (texto)</button><button id="exportBtn" class="btn btn-primary">⇩ Exportar Relatório (.docx)</button></div>
+        <div class="export-actions">
+          <label class="btn btn-light file-btn">⇧ Importar tabela <input id="importFile" type="file" accept=".docx,.txt,.csv,.tsv" hidden></label>
+          <button id="copyBtn" class="btn btn-light">⧉ Copiar texto</button>
+          <button id="exportCsvBtn" class="btn btn-light">CSV</button>
+          <button id="exportTsvBtn" class="btn btn-light">TSV</button>
+          <button id="exportJsonBtn" class="btn btn-light">JSON</button>
+          <button id="exportXmlBtn" class="btn btn-light">XML</button>
+          <button id="exportBtn" class="btn btn-primary">⇩ Word (.docx)</button>
+        </div>
       </header>
 
       <section id="dashboard" class="stats-grid">
@@ -41,7 +49,7 @@
 
       <section id="cadastro" class="panel">
         <div class="panel-heading">
-          <div><h2 id="formTitle">Cadastrar produto</h2><p>Preencha os dados do item e marque os status correspondentes.</p></div>
+          <div><h2 id="formTitle">Cadastrar produto</h2><p>Preencha os dados do item e marque os status correspondentes. Você também pode importar uma tabela.</p></div>
           <button id="cancelEdit" class="btn btn-light hidden">Cancelar edição</button>
         </div>
 
@@ -86,7 +94,8 @@
     </main>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/docx@9.5.1/build/index.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mammoth@1.9.0/mammoth.browser.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

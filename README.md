@@ -25,8 +25,22 @@ A exportação organiza os dados em lotes de até **38 produtos por página**, r
 A biblioteca `docx` é carregada pelo CDN jsDelivr, portanto a exportação requer conexão com a internet no momento da geração. O cadastro e o armazenamento local funcionam no navegador sem backend.
 
 
-## Atualização — exportação em texto e status rápidos
-- O botão **Copiar relatório (texto)** copia uma tabela separada por TAB, ideal para colar diretamente no Excel, Word ou outros aplicativos.
-- **Estoque** e **Catálogo** começam como `false` (exibidos como `null`) no cadastro.
-- Na tabela de produtos, basta clicar no badge `null`/`OK` para alternar o status sem abrir a edição.
-- A alteração é salva imediatamente no `localStorage`.
+## Importação de tabelas
+- **DOCX:** selecione um arquivo Word que contenha uma tabela; a primeira linha é interpretada como cabeçalho.
+- **TXT/CSV/TSV:** a primeira linha deve conter os cabeçalhos. O sistema reconhece TAB, `;` ou `,`.
+- Ao importar, o usuário escolhe entre substituir a lista atual ou adicionar os itens importados.
+- Status `OK`, `true`, `1`, `sim` ou `x` são importados como verdadeiro; os demais valores iniciam como falso/null.
+- Cabeçalhos reconhecidos: Produto, Quantidade, Fileira, Estoque, Catalogo/ Catálogo, Mínimo/Minimo e Máximo/Maximo.
+
+## Exportações
+- Word `.docx` — até 38 itens por lote/página.
+- CSV `.csv`
+- TSV `.tsv`
+- JSON `.json`
+- XML `.xml`
+- Texto copiado para a área de transferência.
+
+## Bibliotecas
+- `docx@8.5.0` para geração de Word.
+- `mammoth@1.9.0` para leitura de tabelas DOCX.
+Ambas são carregadas por CDN e o sistema informa caso a biblioteca não esteja disponível.
