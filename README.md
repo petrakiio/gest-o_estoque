@@ -44,3 +44,9 @@ A biblioteca `docx` é carregada pelo CDN jsDelivr, portanto a exportação requ
 - `docx@8.5.0` para geração de Word.
 - `mammoth@1.9.0` para leitura de tabelas DOCX.
 Ambas são carregadas por CDN e o sistema informa caso a biblioteca não esteja disponível.
+
+
+## Atualização — limpeza e importação por input
+- **Limpar lista:** remove todos os produtos do `localStorage` após confirmação.
+- **Importar tabela por texto:** permite colar diretamente uma tabela copiada do Excel, Word, TXT, CSV ou TSV e importar os produtos.
+- A importação por texto mantém a opção de substituir a lista atual ou adicionar aos produtos existentes.

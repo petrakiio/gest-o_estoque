@@ -36,6 +36,7 @@
           <button id="exportTsvBtn" class="btn btn-light">TSV</button>
           <button id="exportJsonBtn" class="btn btn-light">JSON</button>
           <button id="exportXmlBtn" class="btn btn-light">XML</button>
+          <button id="clearListBtn" class="btn btn-danger">⌫ Limpar lista</button>
           <button id="exportBtn" class="btn btn-primary">⇩ Word (.docx)</button>
         </div>
       </header>
@@ -72,6 +73,20 @@
             <button class="btn btn-light" type="reset" id="clearBtn">Limpar</button>
           </div>
         </form>
+      </section>
+
+      <section class="panel import-panel">
+        <div class="panel-heading">
+          <div><h2>Importar tabela por texto</h2><p>Cole aqui uma tabela copiada do Excel, Word, TXT, CSV ou TSV.</p></div>
+        </div>
+        <div class="paste-import">
+          <textarea id="tableInput" placeholder="Cole a tabela aqui...
+
+Exemplo:
+Produto	Quantidade	Fileira	Estoque	Catalogo	Mínimo	Máximo
+Mangueira 1/2	10	A-01	OK	null	5	20"></textarea>
+          <div class="paste-actions"><button id="importInputBtn" class="btn btn-primary">⇧ Importar tabela colada</button><button id="clearInputBtn" class="btn btn-light">Limpar campo</button></div>
+        </div>
       </section>
 
       <section class="panel">

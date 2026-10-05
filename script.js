@@ -247,6 +247,23 @@ $("importFile").addEventListener("change",e=>{
   if(file) importFile(file);
 });
 
+$('clearListBtn').addEventListener('click',()=>{
+  if(!products.length){alert('A lista de produtos já está vazia.');return;}
+  if(!confirm(`Tem certeza que deseja apagar os ${products.length} produto(s) cadastrados?\n\nEssa ação remove os dados salvos neste navegador.`)) return;
+  products=[]; saveProducts(); resetForm(); render(); alert('Lista de produtos limpa com sucesso.');
+});
+$('importInputBtn').addEventListener('click',()=>{
+  const text=$('tableInput').value.trim();
+  if(!text){alert('Cole uma tabela no campo antes de importar.');return;}
+  try{
+    const imported=parseTextTable(text);
+    if(!imported.length){alert('Não foi possível encontrar produtos. A primeira linha deve conter os cabeçalhos, por exemplo: Produto, Quantidade, Fileira, Estoque, Catalogo, Mínimo e Máximo.');return;}
+    const replace=confirm(`Foram encontrados ${imported.length} produto(s).\n\nOK = substituir a lista atual.\nCancelar = adicionar aos produtos existentes.`);
+    products=replace?imported:[...products,...imported]; saveProducts(); render(); $('tableInput').value=''; alert(`${imported.length} produto(s) importado(s) com sucesso.`);
+  }catch(err){console.error(err);alert('Erro ao importar a tabela: '+(err.message||err));}
+});
+$('clearInputBtn').addEventListener('click',()=>$('tableInput').value='');
+
 function exportRows(){
   return products.map(p=>({
     Produto:p.produto, Quantidade:p.quantidade, Fileira:p.fileira || "",

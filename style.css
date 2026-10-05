@@ -18,3 +18,6 @@ nav{display:grid;gap:6px}.nav-item{color:#aeb9c9;text-decoration:none;padding:12
 .file-btn{display:inline-flex;align-items:center;justify-content:center}
 .status-toggle{font-family:inherit}
 @media(max-width:1100px){.export-actions{width:100%}.export-actions .btn{flex:1}}
+
+.import-panel .panel-heading{border-bottom:1px solid var(--line)}
+.paste-import{padding:20px 22px}.paste-import textarea{width:100%;min-height:160px;resize:vertical;border:1px solid #d7dde7;border-radius:10px;padding:12px;font:13px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;outline:none}.paste-import textarea:focus{border-color:#93c5fd;box-shadow:0 0 0 3px #dbeafe}.paste-actions{display:flex;gap:9px;margin-top:10px}.btn-danger{background:#fee2e2;color:#b91c1c}.btn-danger:hover{background:#fecaca}
