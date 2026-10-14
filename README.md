@@ -50,3 +50,12 @@ Ambas são carregadas por CDN e o sistema informa caso a biblioteca não esteja 
 - **Limpar lista:** remove todos os produtos do `localStorage` após confirmação.
 - **Importar tabela por texto:** permite colar diretamente uma tabela copiada do Excel, Word, TXT, CSV ou TSV e importar os produtos.
 - A importação por texto mantém a opção de substituir a lista atual ou adicionar aos produtos existentes.
+
+
+## Atualização — juntar importações e tratar duplicados
+Ao importar um arquivo ou colar uma tabela, o sistema oferece três modos:
+1. **Juntar com a lista atual e remover duplicados (recomendado):** compara o nome do produto + fileira, normalizando maiúsculas/minúsculas, acentos e espaços.
+2. **Substituir a lista atual:** também remove duplicados dentro da tabela importada.
+3. **Adicionar sem deduplicar:** mantém todas as linhas, inclusive repetidas.
+
+Quando dois itens com a mesma chave são encontrados, os dados preenchidos da importação mais recente prevalecem para quantidade e limites; os status Estoque/Catálogo permanecem `OK` se já estavam marcados em qualquer uma das linhas. Ao final, o sistema informa quantos duplicados foram tratados e o total resultante.
