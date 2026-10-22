@@ -160,53 +160,6 @@ function boolFrom(v){
   const s=String(v ?? "").trim().toLowerCase();
   return ["ok","true","1","sim","yes","x","✓","✔"].includes(s);
 }
-
-function productKey(p){
-  const clean=v=>String(v??'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ');
-  return clean(p.produto)+'|'+clean(p.fileira);
-}
-function dedupeProducts(list){
-  const map=new Map(); let duplicates=0;
-  for(const item of list){
-    const key=productKey(item);
-    if(map.has(key)){
-      duplicates++;
-      const old=map.get(key);
-      // Mantém os dados mais recentes preenchidos e preserva status já marcado como OK.
-      map.set(key,{...old,...item,id:old.id||item.id,
-        produto:item.produto?.trim()||old.produto,
-        quantidade:String(item.quantidade??'').trim()!==''?item.quantidade:old.quantidade,
-        fileira:String(item.fileira??'').trim()||old.fileira,
-        minimo:String(item.minimo??'').trim()!==''?item.minimo:old.minimo,
-        maximo:String(item.maximo??'').trim()!==''?item.maximo:old.maximo,
-        estoque:Boolean(old.estoque||item.estoque),
-        catalogo:Boolean(old.catalogo||item.catalogo)});
-    }else map.set(key,{...item});
-  }
-  return {items:[...map.values()],duplicates};
-}
-function chooseImportMode(){
-  const answer=prompt('Como deseja importar a tabela?\n\n1 = JUNTAR com a lista atual e remover duplicados (recomendado)\n2 = Substituir a lista atual\n3 = Adicionar tudo sem juntar duplicados\n\nDigite 1, 2 ou 3:','1');
-  if(answer===null)return null;
-  const mode=answer.trim();
-  return ['1','2','3'].includes(mode)?mode:null;
-}
-function applyImport(imported){
-  const mode=chooseImportMode();
-  if(!mode)return {cancelled:true};
-  let result, duplicates=0;
-  if(mode==='1'){
-    const merged=dedupeProducts([...products,...imported]);
-    result=merged.items; duplicates=merged.duplicates;
-  }else if(mode==='2'){
-    const cleaned=dedupeProducts(imported);
-    result=cleaned.items; duplicates=cleaned.duplicates;
-  }else result=[...products,...imported];
-  const before=mode==='1'?products.length+imported.length:imported.length;
-  products=result; saveProducts(); render();
-  return {cancelled:false,mode,duplicates,imported:imported.length,total:products.length,removed:before-products.length};
-}
-
 function mapImportedRow(row, headers){
   const get=(...names)=>{
     for(const n of names){
@@ -271,6 +224,38 @@ async function importDocx(file){
   const headers=rows[0].map(normalizedHeader);
   return rows.slice(1).map(r=>mapImportedRow(r,headers)).filter(Boolean);
 }
+function normalizeLocationKey(value){
+  return String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim().replace(/\s+/g,' ');
+}
+function productKey(p){ return `${normalizeLocationKey(p.produto)}||${normalizeLocationKey(p.fileira)}`; }
+function dedupeProducts(list){
+  const map=new Map(); let duplicates=0;
+  for(const raw of list){
+    const p={...raw,id:raw.id||uid()}, key=productKey(p);
+    if(!map.has(key)){map.set(key,p);continue;}
+    duplicates++; const old=map.get(key);
+    map.set(key,{...old,...p,id:old.id,
+      quantidade:(p.quantidade!==undefined&&String(p.quantidade)!=='')?p.quantidade:old.quantidade,
+      minimo:(p.minimo!==undefined&&String(p.minimo)!=='')?p.minimo:old.minimo,
+      maximo:(p.maximo!==undefined&&String(p.maximo)!=='')?p.maximo:old.maximo,
+      estoque:Boolean(old.estoque||p.estoque),catalogo:Boolean(old.catalogo||p.catalogo)});
+  }
+  return {items:[...map.values()],duplicates};
+}
+function chooseImportMode(){
+  const answer=prompt('Como deseja importar?\n\n1 = Juntar com a lista atual e remover repetidos (recomendado)\n2 = Substituir a lista atual (removendo repetidos)\n3 = Adicionar tudo sem remover repetidos\n\nDigite 1, 2 ou 3:','1');
+  if(answer===null)return null; const mode=answer.trim();
+  if(!['1','2','3'].includes(mode)){alert('Opção inválida. Importação cancelada.');return null;} return mode;
+}
+function applyImport(imported){
+  const mode=chooseImportMode(); if(mode===null)return false; let duplicates=0;
+  if(mode==='1'){const result=dedupeProducts([...products,...imported]);products=result.items;duplicates=result.duplicates;}
+  else if(mode==='2'){const result=dedupeProducts(imported);products=result.items;duplicates=result.duplicates;}
+  else products=[...products,...imported.map(p=>({...p,id:p.id||uid()}))];
+  saveProducts();render();
+  alert(`Importação concluída.\nProdutos lidos: ${imported.length}\nDuplicados consolidados: ${duplicates}\nTotal na lista: ${products.length}`); return true;
+}
+
 async function importFile(file){
   try{
     const ext=file.name.toLowerCase().split(".").pop();
@@ -278,10 +263,7 @@ async function importFile(file){
     if(ext==="docx") imported=await importDocx(file);
     else imported=parseTextTable(await file.text());
     if(!imported.length){ alert("Não foi possível encontrar produtos na tabela. Confira se a primeira linha contém os cabeçalhos Produto, Quantidade, Fileira, Estoque, Catalogo e, opcionalmente, Mínimo/Máximo."); return; }
-    const result=applyImport(imported);
-    if(result.cancelled)return;
-    const modeLabel=result.mode==='1'?'Lista juntada e duplicados tratados':result.mode==='2'?'Lista substituída':'Produtos adicionados sem deduplicação';
-    alert(`${modeLabel}.\nProdutos lidos: ${result.imported}\nDuplicados tratados: ${result.duplicates}\nTotal na lista: ${result.total}`);
+    applyImport(imported);
   }catch(err){
     console.error(err);
     alert("Erro ao importar: "+(err.message || err));
@@ -292,6 +274,26 @@ async function importFile(file){
 $("importFile").addEventListener("change",e=>{
   const file=e.target.files?.[0];
   if(file) importFile(file);
+});
+
+// Altera em lote a localização (campo Fileira) de todos os produtos que correspondam à origem.
+$('changeLocationBtn').addEventListener('click',()=>{
+  if(!products.length){ alert('Não há produtos cadastrados para alterar.'); return; }
+  const oldLocation=prompt('Digite a localização que deseja mudar (ex.: P1-02):');
+  if(oldLocation===null) return;
+  const from=oldLocation.trim();
+  if(!from){ alert('Informe a localização atual.'); return; }
+  const newLocation=prompt('Digite a nova localização (ex.: P1-03):');
+  if(newLocation===null) return;
+  const to=newLocation.trim();
+  if(!to){ alert('Informe a nova localização.'); return; }
+  if(from.toLowerCase()===to.toLowerCase()){ alert('A localização nova é igual à atual. Nenhuma alteração foi feita.'); return; }
+  const matches=products.filter(p=>String(p.fileira||'').trim().toLowerCase()===from.toLowerCase());
+  if(!matches.length){ alert(`Nenhum produto encontrado na localização "${from}".`); return; }
+  if(!confirm(`Alterar a localização de ${matches.length} produto(s) de "${from}" para "${to}"?`)) return;
+  matches.forEach(p=>{ p.fileira=to; });
+  saveProducts(); render();
+  alert(`${matches.length} produto(s) atualizado(s): "${from}" → "${to}".`);
 });
 
 $('clearListBtn').addEventListener('click',()=>{
@@ -305,11 +307,7 @@ $('importInputBtn').addEventListener('click',()=>{
   try{
     const imported=parseTextTable(text);
     if(!imported.length){alert('Não foi possível encontrar produtos. A primeira linha deve conter os cabeçalhos, por exemplo: Produto, Quantidade, Fileira, Estoque, Catalogo, Mínimo e Máximo.');return;}
-    const result=applyImport(imported);
-    if(result.cancelled)return;
-    $('tableInput').value='';
-    const modeLabel=result.mode==='1'?'Lista juntada e duplicados tratados':result.mode==='2'?'Lista substituída':'Produtos adicionados sem deduplicação';
-    alert(`${modeLabel}.\nProdutos lidos: ${result.imported}\nDuplicados tratados: ${result.duplicates}\nTotal na lista: ${result.total}`);
+    if(applyImport(imported)) $('tableInput').value='';
   }catch(err){console.error(err);alert('Erro ao importar a tabela: '+(err.message||err));}
 });
 $('clearInputBtn').addEventListener('click',()=>$('tableInput').value='');
