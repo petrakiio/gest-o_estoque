@@ -34,7 +34,8 @@ A biblioteca `docx` é carregada pelo CDN jsDelivr, portanto a exportação requ
 
 ## Exportações
 - Word `.docx` — até 38 itens por lote/página.
-- CSV `.csv`
+- CSV completo `.csv`
+- Produto + Fileira `.csv` — exporta somente o nome do produto e sua localização/fileira.
 - TSV `.tsv`
 - JSON `.json`
 - XML `.xml`

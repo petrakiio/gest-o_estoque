@@ -333,6 +333,12 @@ function exportCSV(){
   downloadBlob([head.join(","),...rows.map(r=>head.map(k=>csvEscape(r[k])).join(","))].join("\r\n"),
     `relatorio_estoque_${new Date().toISOString().slice(0,10)}.csv`,"text/csv;charset=utf-8");
 }
+function exportProductLocation(){
+  if(!products.length){alert("Cadastre pelo menos um produto antes de exportar.");return;}
+  const rows=products.map(p=>({Produto:p.produto || "", Fileira:p.fileira || ""}));
+  const csv=["Produto,Fileira",...rows.map(r=>[r.Produto,r.Fileira].map(csvEscape).join(","))].join("\r\n");
+  downloadBlob("\uFEFF"+csv,`produtos_fileiras_${new Date().toISOString().slice(0,10)}.csv`,"text/csv;charset=utf-8");
+}
 function exportTSV(){
   if(!products.length){alert("Cadastre pelo menos um produto antes de exportar.");return;}
   const rows=exportRows(), head=Object.keys(rows[0]);
@@ -353,6 +359,7 @@ function exportXML(){
   downloadBlob(xml,`relatorio_estoque_${new Date().toISOString().slice(0,10)}.xml`,"application/xml;charset=utf-8");
 }
 $("exportCsvBtn").addEventListener("click",exportCSV);
+$("exportProductLocationBtn").addEventListener("click",exportProductLocation);
 $("exportTsvBtn").addEventListener("click",exportTSV);
 $("exportJsonBtn").addEventListener("click",exportJSON);
 $("exportXmlBtn").addEventListener("click",exportXML);
