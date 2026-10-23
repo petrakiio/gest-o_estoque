@@ -77,6 +77,39 @@
         </form>
       </section>
 
+      <section class="panel voice-panel" id="voz">
+        <div class="panel-heading">
+          <div><h2>🎙️ Cadastrar produto por voz</h2><p>Fale um campo por vez ou informe todos os dados na mesma frase. Nada será cadastrado antes de você revisar a interpretação.</p></div>
+        </div>
+        <div class="voice-content">
+          <div class="voice-controls">
+            <label>Modo de voz
+              <select id="voiceMode"><option value="all">Todos os campos de uma vez</option><option value="single">Um campo por vez</option></select>
+            </label>
+            <label id="voiceFieldWrap" class="hidden">Campo a preencher
+              <select id="voiceField"><option value="produto">Produto</option><option value="quantidade">Quantidade</option><option value="fileira">Fileira</option><option value="minimo">Estoque mínimo</option><option value="maximo">Estoque máximo</option></select>
+            </label>
+            <button id="startVoiceBtn" class="btn btn-primary" type="button">🎙️ Começar a falar</button>
+            <button id="parseVoiceBtn" class="btn btn-light" type="button">Interpretar texto</button>
+          </div>
+          <label class="voice-transcript-label">Texto reconhecido (você também pode corrigir ou digitar aqui)
+            <textarea id="voiceTranscript" rows="3" placeholder="Ex.: produto: MTX-12, quantidade: 12, mínimo: 12, máximo: 24, fileira: P1-02"></textarea>
+          </label>
+          <p id="voiceStatus" class="voice-status" role="status">Escolha um modo e clique em “Começar a falar”. O navegador pode pedir permissão para usar o microfone.</p>
+          <div id="voicePreview" class="voice-preview hidden">
+            <div class="voice-preview-heading"><div><h3>Confira o que o sistema interpretou</h3><p>Revise e corrija os campos antes de cadastrar.</p></div><span class="review-tag">Revisão obrigatória</span></div>
+            <div class="form-grid voice-preview-grid">
+              <label>Produto *<input id="voiceProduto" maxlength="120" placeholder="Nome do produto"></label>
+              <label>Quantidade *<input id="voiceQuantidade" type="number" min="0" step="any" placeholder="0"></label>
+              <label>Fileira<input id="voiceFileira" maxlength="30" placeholder="Ex.: P1-02"></label>
+              <label>Estoque mínimo *<input id="voiceMinimo" type="number" min="0" step="any" placeholder="0"></label>
+              <label>Estoque máximo *<input id="voiceMaximo" type="number" min="0" step="any" placeholder="0"></label>
+            </div>
+            <div class="voice-confirm-actions"><button id="confirmVoiceBtn" class="btn btn-primary" type="button">✓ Confirmar e adicionar produto</button><button id="cancelVoiceBtn" class="btn btn-light" type="button">Cancelar</button></div>
+          </div>
+        </div>
+      </section>
+
       <section class="panel import-panel">
         <div class="panel-heading">
           <div><h2>Importar tabela por texto</h2><p>Cole aqui uma tabela copiada do Excel, Word, TXT, CSV ou TSV.</p></div>

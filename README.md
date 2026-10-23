@@ -57,3 +57,10 @@ Ambas são carregadas por CDN e o sistema informa caso a biblioteca não esteja 
 - O botão **Alterar localização** pede a localização atual e a nova localização e atualiza todos os produtos cuja coluna **Fileira** corresponda exatamente à localização informada, ignorando diferença entre maiúsculas/minúsculas e espaços nas pontas.
 - Antes de alterar, mostra quantos produtos serão atualizados e pede confirmação.
 - Na importação, escolha entre juntar e deduplicar, substituir e deduplicar, ou adicionar sem deduplicar. A identificação de repetidos usa nome do produto + fileira; os status positivos são preservados.
+
+
+## Cadastro por voz (v8)
+- Permite ditar um campo por vez ou informar vários campos na mesma frase.
+- Exemplo para todos os campos: `produto: MTX-12, quantidade: 12, minimo: 12, maximo: 24, fileira: P1-02`.
+- O sistema mostra uma pré-visualização editável e pede confirmação antes de cadastrar; o cadastro por voz inicia com Estoque e Catálogo desmarcados.
+- Usa reconhecimento de voz do navegador (Web Speech API), recomendado em versões atuais do Chrome/Edge e com permissão de microfone. Se o reconhecimento não estiver disponível, é possível digitar a frase e clicar em “Interpretar texto”.

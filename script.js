@@ -404,4 +404,75 @@ async function exportDocx(){
   }catch(err){console.error(err);alert("Não foi possível gerar o Word: "+(err.message||err));}
 }
 
+
+// Cadastro por voz com pré-visualização obrigatória antes de salvar.
+const voiceFieldIds = {produto:"voiceProduto", quantidade:"voiceQuantidade", fileira:"voiceFileira", minimo:"voiceMinimo", maximo:"voiceMaximo"};
+const voiceLabels = {produto:"produto", quantidade:"quantidade", fileira:"fileira", minimo:"mínimo", maximo:"máximo"};
+function normalizeSpeech(s){return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();}
+function parseVoiceData(text, mode){
+  const result={produto:"",quantidade:"",fileira:"",minimo:"",maximo:""};
+  const source=String(text||"").replace(/[\n;]+/g,",");
+  if(mode==="single"){
+    const field=$("voiceField").value;
+    let value=source.trim();
+    const colon=value.indexOf(":"); if(colon>=0)value=value.slice(colon+1).trim();
+    result[field]=value.replace(/^['"]|['"]$/g,"").trim();
+    return result;
+  }
+  const chunks=source.split(",").map(x=>x.trim()).filter(Boolean);
+  chunks.forEach(chunk=>{
+    const parts=chunk.match(/^(produto|nome do produto|nome|quantidade|qtd|fileira|localização|localizacao|estoque\s+mínimo|estoque\s+minimo|mínimo|minimo|estoque\s+máximo|estoque\s+maximo|máximo|maximo)\s*(?::|=)?\s*(.*)$/i);
+    if(!parts)return;
+    const key=normalizeSpeech(parts[1]); let field=null;
+    if(key.includes("produto")||key==="nome")field="produto";
+    else if(key==="quantidade"||key==="qtd")field="quantidade";
+    else if(key==="fileira"||key.includes("localizacao"))field="fileira";
+    else if(key.includes("minimo"))field="minimo";
+    else if(key.includes("maximo"))field="maximo";
+    if(field)result[field]=parts[2].replace(/^['"]|['"]$/g,"").trim();
+  });
+  return result;
+}
+function showVoicePreview(data){
+  Object.entries(voiceFieldIds).forEach(([field,id])=>{if(data[field]!==undefined && data[field]!=="")$(id).value=data[field];});
+  $("voicePreview").classList.remove("hidden");
+  $("voicePreview").scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+function interpretVoice(){
+  const text=$("voiceTranscript").value.trim();
+  if(!text){$("voiceStatus").textContent="Nenhum texto foi reconhecido. Fale pelo microfone ou digite a frase no campo acima.";return;}
+  const data=parseVoiceData(text,$("voiceMode").value);
+  if(!Object.values(data).some(v=>String(v).trim()!=="")){$("voiceStatus").textContent="Não consegui identificar os campos. Use: produto: MTX-12, quantidade: 12, minimo: 12, maximo: 24.";return;}
+  showVoicePreview(data);
+  const missing=Object.entries(voiceFieldIds).filter(([field])=>!String($(voiceFieldIds[field]).value||"").trim()).map(([field])=>voiceLabels[field]);
+  $("voiceStatus").textContent="Interpretação pronta. Confira os campos abaixo; nada foi cadastrado ainda."+(missing.length?" Campos ainda vazios: "+missing.join(", ")+".":"");
+}
+$("voiceMode").addEventListener("change",()=>{
+  $("voiceFieldWrap").classList.toggle("hidden",$("voiceMode").value!=="single");
+  $("voiceTranscript").value=""; $("voicePreview").classList.add("hidden");
+  $("voiceStatus").textContent=$("voiceMode").value==="single"?"Escolha o campo e dite somente o valor dele.":"Dite os campos com seus nomes, por exemplo: produto: MTX-12, quantidade: 12, minimo: 12, maximo: 24.";
+});
+$("parseVoiceBtn").addEventListener("click",interpretVoice);
+$("startVoiceBtn").addEventListener("click",()=>{
+  const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SpeechRecognition){$("voiceStatus").textContent="Este navegador não oferece reconhecimento de voz. Use uma versão atual do Google Chrome ou Microsoft Edge; você também pode digitar a frase e clicar em Interpretar texto.";return;}
+  const recognition=new SpeechRecognition(); recognition.lang="pt-BR"; recognition.interimResults=false; recognition.maxAlternatives=1;
+  $("startVoiceBtn").disabled=true; $("voiceStatus").textContent="Ouvindo… fale agora. O navegador pode solicitar acesso ao microfone.";
+  recognition.onresult=event=>{$("voiceTranscript").value=event.results[0][0].transcript;interpretVoice();};
+  recognition.onerror=event=>{$("voiceStatus").textContent="Não foi possível reconhecer a fala ("+event.error+"). Confira a permissão do microfone ou digite o texto manualmente.";};
+  recognition.onend=()=>{$("startVoiceBtn").disabled=false;};
+  try{recognition.start();}catch(err){$("voiceStatus").textContent="Não foi possível iniciar o microfone. Tente novamente.";$("startVoiceBtn").disabled=false;}
+});
+$("confirmVoiceBtn").addEventListener("click",()=>{
+  const data={produto:$("voiceProduto").value.trim(),quantidade:$("voiceQuantidade").value,fileira:$("voiceFileira").value.trim(),minimo:$("voiceMinimo").value,maximo:$("voiceMaximo").value};
+  if(!data.produto||data.quantidade===""||data.minimo===""||data.maximo===""){alert("Confira a interpretação: Produto, Quantidade, Estoque mínimo e Estoque máximo são obrigatórios.");return;}
+  if([data.quantidade,data.minimo,data.maximo].some(v=>!Number.isFinite(Number(v))||Number(v)<0)){alert("Quantidade, mínimo e máximo devem ser números iguais ou maiores que zero.");return;}
+  if(Number(data.maximo)<Number(data.minimo)){alert("O estoque máximo deve ser maior ou igual ao mínimo.");return;}
+  if(!confirm(`Confirma cadastrar este produto?\n\nProduto: ${data.produto}\nQuantidade: ${data.quantidade}\nFileira: ${data.fileira||"(não informada)"}\nMínimo: ${data.minimo}\nMáximo: ${data.maximo}\n\nConfira os dados antes de confirmar.`))return;
+  products.push({id:uid(),...data,estoque:false,catalogo:false}); saveProducts(); render();
+  Object.values(voiceFieldIds).forEach(id=>$(id).value=""); $("voiceTranscript").value=""; $("voicePreview").classList.add("hidden");
+  $("voiceStatus").textContent="Produto cadastrado com sucesso. Você pode iniciar outro cadastro por voz.";
+});
+$("cancelVoiceBtn").addEventListener("click",()=>{$("voicePreview").classList.add("hidden");$("voiceStatus").textContent="Pré-visualização cancelada. Nenhum produto foi cadastrado.";});
+
 render();
