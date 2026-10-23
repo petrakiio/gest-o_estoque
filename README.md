@@ -64,3 +64,11 @@ Ambas são carregadas por CDN e o sistema informa caso a biblioteca não esteja 
 - Exemplo para todos os campos: `produto: MTX-12, quantidade: 12, minimo: 12, maximo: 24, fileira: P1-02`.
 - O sistema mostra uma pré-visualização editável e pede confirmação antes de cadastrar; o cadastro por voz inicia com Estoque e Catálogo desmarcados.
 - Usa reconhecimento de voz do navegador (Web Speech API), recomendado em versões atuais do Chrome/Edge e com permissão de microfone. Se o reconhecimento não estiver disponível, é possível digitar a frase e clicar em “Interpretar texto”.
+
+
+## Auto Mín./Máx. (v9)
+- Na seção **Lista de regras para Auto Mín./Máx.**, cadastre uma regra por linha no formato `PREFIXO:mínimo,máximo`, por exemplo `MTX:12,24`.
+- Salve a lista; as regras ficam armazenadas no navegador.
+- No formulário, preencha o produto/código (por exemplo `MTX12-12`) e clique em **Auto Mín./Máx.**. O sistema usa as letras iniciais como prefixo e preenche os dois campos se existir regra correspondente.
+- Se não houver regra para o prefixo, o sistema avisa e deixa os campos Mínimo e Máximo como estavam, sem preencher valores automaticamente.
+- A validação da lista rejeita linhas em formato inválido e valores negativos, ou máximo menor que mínimo.

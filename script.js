@@ -112,6 +112,69 @@ $("cancelEdit").addEventListener("click", resetForm);
 $("clearBtn").addEventListener("click", () => setTimeout(resetForm,0));
 $("search").addEventListener("input", render);
 
+// Regras personalizadas de estoque mínimo/máximo por prefixo do código/nome do produto.
+const AUTO_RULES_KEY = "gestao_produtos_auto_min_max_rules_v1";
+function normalizeRuleKey(value){
+  return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+}
+function parseAutoRules(text){
+  const rules = {};
+  const errors = [];
+  String(text || "").split(/\r?\n/).forEach((raw, index) => {
+    const line = raw.trim();
+    if (!line) return;
+    const match = line.match(/^([^:=]+)\s*[:=]\s*(-?\d+(?:[.,]\d+)?)\s*[,;]\s*(-?\d+(?:[.,]\d+)?)\s*$/);
+    if (!match) { errors.push(index + 1); return; }
+    const key = normalizeRuleKey(match[1]);
+    const min = Number(match[2].replace(",", "."));
+    const max = Number(match[3].replace(",", "."));
+    if (!key || !Number.isFinite(min) || !Number.isFinite(max) || min < 0 || max < min) { errors.push(index + 1); return; }
+    rules[key] = {min, max};
+  });
+  return {rules, errors};
+}
+function loadAutoRulesText(){
+  try { return localStorage.getItem(AUTO_RULES_KEY) || ""; } catch(e) { return ""; }
+}
+$("autoMinMaxRules").value = loadAutoRulesText();
+$("saveAutoRulesBtn").addEventListener("click", () => {
+  const parsed = parseAutoRules($("autoMinMaxRules").value);
+  if (parsed.errors.length) {
+    $("autoMinMaxStatus").textContent = `Formato inválido nas linhas: ${parsed.errors.join(", ")}. Use PREFIXO:mínimo,máximo, por exemplo MTX:12,24.`;
+    alert($("autoMinMaxStatus").textContent);
+    return;
+  }
+  localStorage.setItem(AUTO_RULES_KEY, $("autoMinMaxRules").value.trim());
+  $("autoMinMaxStatus").textContent = `Lista salva com ${Object.keys(parsed.rules).length} regra(s).`;
+});
+$("clearAutoRulesBtn").addEventListener("click", () => {
+  if (!confirm("Deseja apagar todas as regras de Auto Mín./Máx.?")) return;
+  $("autoMinMaxRules").value = "";
+  localStorage.removeItem(AUTO_RULES_KEY);
+  $("autoMinMaxStatus").textContent = "Todas as regras foram removidas.";
+});
+function applyAutoMinMax(productValue){
+  const product = String(productValue || "").trim();
+  if (!product) { alert("Digite primeiro o produto ou código."); return; }
+  const parsed = parseAutoRules($("autoMinMaxRules").value);
+  if (parsed.errors.length) {
+    alert(`Corrija o formato das linhas ${parsed.errors.join(", ")} na lista de regras antes de usar o Auto Mín./Máx.`);
+    return;
+  }
+  const prefixMatch = product.match(/^([\p{L}]+)/u);
+  const prefix = prefixMatch ? normalizeRuleKey(prefixMatch[1]) : "";
+  const rule = parsed.rules[prefix];
+  if (!rule) {
+    $("autoMinMaxStatus").textContent = `Nenhuma regra encontrada para o prefixo "${prefix || "não identificado"}". Os campos mínimo e máximo não foram alterados.`;
+    alert(`Não existe uma regra cadastrada para o prefixo "${prefix || "não identificado"}".\nOs campos Mínimo e Máximo não foram preenchidos.`);
+    return;
+  }
+  $("minimo").value = String(rule.min);
+  $("maximo").value = String(rule.max);
+  $("autoMinMaxStatus").textContent = `Regra ${prefix}:${rule.min},${rule.max} aplicada ao produto ${product}.`;
+}
+$("autoMinMaxBtn").addEventListener("click", () => applyAutoMinMax($("produto").value));
+
 async function copyTextReport(){
   if(!products.length){ alert("Cadastre pelo menos um produto antes de copiar."); return; }
 

@@ -72,9 +72,27 @@
           </div>
           <div class="form-actions">
             <button class="btn btn-primary" type="submit" id="saveBtn">Adicionar produto</button>
+            <button class="btn btn-light" type="button" id="autoMinMaxBtn">⚙ Auto Mín./Máx.</button>
             <button class="btn btn-light" type="reset" id="clearBtn">Limpar</button>
           </div>
         </form>
+      </section>
+
+      <section class="panel auto-rules-panel" id="auto-min-max">
+        <div class="panel-heading">
+          <div><h2>⚙ Lista de regras para Auto Mín./Máx.</h2><p>Cadastre um prefixo por linha. Formato: PREFIXO:mínimo,máximo</p></div>
+        </div>
+        <div class="auto-rules-content">
+          <label for="autoMinMaxRules">Regras personalizadas</label>
+          <textarea id="autoMinMaxRules" rows="5" spellcheck="false" placeholder="MTX:12,24
+FILTRO:3,10
+BATERIA:2,5"></textarea>
+          <div class="auto-rules-actions">
+            <button id="saveAutoRulesBtn" class="btn btn-primary" type="button">Salvar lista</button>
+            <button id="clearAutoRulesBtn" class="btn btn-light" type="button">Limpar regras</button>
+          </div>
+          <p id="autoMinMaxStatus" class="voice-status" role="status">Exemplo: ao cadastrar MTX12-12, a regra MTX:12,24 preenche mínimo 12 e máximo 24. Se não houver regra correspondente, os campos não serão preenchidos.</p>
+        </div>
       </section>
 
       <section class="panel voice-panel" id="voz">
