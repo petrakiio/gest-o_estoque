@@ -46,6 +46,7 @@ function render(){
   }).join("");
 
   $("emptyState").style.display = filtered.length ? "none" : "block";
+  if (typeof updateRuleThreeProductOptions === "function") updateRuleThreeProductOptions();
 }
 
 form.addEventListener("submit", e => {
@@ -539,3 +540,84 @@ $("confirmVoiceBtn").addEventListener("click",()=>{
 $("cancelVoiceBtn").addEventListener("click",()=>{$("voicePreview").classList.add("hidden");$("voiceStatus").textContent="Pré-visualização cancelada. Nenhum produto foi cadastrado.";});
 
 render();
+
+// Calculadora de regra de três: Se A dá B, Quanto C dá X.
+function updateRuleThreeProductOptions(){
+  const select = $("ruleThreeProduct");
+  if (!select) return;
+  const previous = select.value;
+  select.innerHTML = '<option value="">Selecione um produto...</option>' + products.map(p =>
+    `<option value="${esc(p.id)}">${esc(p.produto)} — quantidade: ${esc(p.quantidade)}</option>`
+  ).join("");
+  if (products.some(p => p.id === previous)) select.value = previous;
+}
+
+function calculateRuleThree(){
+  const aText = $("ruleThreeA").value.trim();
+  const bText = $("ruleThreeB").value.trim();
+  const cText = $("ruleThreeC").value.trim();
+  const result = $("ruleThreeResult");
+  const status = $("ruleThreeStatus");
+  const applyBtn = $("applyRuleThreeResultBtn");
+  if (aText === "" || bText === "" || cText === "") {
+    result.textContent = "—";
+    status.textContent = "Preencha os três valores. O campo ‘Se’ não pode ser zero.";
+    status.classList.remove("calculation-error", "calculation-ready");
+    if (applyBtn) applyBtn.disabled = true;
+    return null;
+  }
+  const a = Number(aText), b = Number(bText), c = Number(cText);
+  if (![a,b,c].every(Number.isFinite)) {
+    result.textContent = "—";
+    status.textContent = "Confira os valores: todos devem ser números válidos.";
+    status.classList.add("calculation-error"); status.classList.remove("calculation-ready");
+    if (applyBtn) applyBtn.disabled = true;
+    return null;
+  }
+  if (a === 0) {
+    result.textContent = "—";
+    status.textContent = "Não é possível dividir por zero. Altere o valor ‘Se’.";
+    status.classList.add("calculation-error"); status.classList.remove("calculation-ready");
+    if (applyBtn) applyBtn.disabled = true;
+    return null;
+  }
+  const x = (b * c) / a;
+  const rounded = Number(x.toPrecision(10));
+  result.textContent = rounded.toLocaleString("pt-BR", {maximumFractionDigits: 8});
+  status.textContent = `Cálculo: (${b} × ${c}) ÷ ${a} = ${rounded.toLocaleString("pt-BR", {maximumFractionDigits: 8})}.`;
+  status.classList.remove("calculation-error"); status.classList.add("calculation-ready");
+  if (applyBtn) applyBtn.disabled = !$("ruleThreeProduct").value;
+  return rounded;
+}
+
+["ruleThreeA", "ruleThreeB", "ruleThreeC"].forEach(id => $(id).addEventListener("input", calculateRuleThree));
+$("ruleThreeProduct").addEventListener("change", () => {
+  const applyBtn = $("applyRuleThreeResultBtn");
+  if (applyBtn) applyBtn.disabled = !$("ruleThreeProduct").value || calculateRuleThree() === null;
+});
+$("useProductQuantityBtn").addEventListener("click", () => {
+  const product = products.find(p => p.id === $("ruleThreeProduct").value);
+  if (!product) { alert("Selecione um produto cadastrado primeiro."); return; }
+  if (product.quantidade === "" || !Number.isFinite(Number(product.quantidade))) {
+    alert("O produto selecionado não tem uma quantidade válida."); return;
+  }
+  $("ruleThreeC").value = product.quantidade;
+  calculateRuleThree();
+  $("ruleThreeStatus").textContent = `Quantidade atual de “${product.produto}” (${product.quantidade}) inserida em “Quanto”. Confira o resultado.`;
+});
+$("applyRuleThreeResultBtn").addEventListener("click", () => {
+  const product = products.find(p => p.id === $("ruleThreeProduct").value);
+  const result = calculateRuleThree();
+  if (!product || result === null) { alert("Selecione um produto e confira se a conta tem um resultado válido."); return; }
+  const display = result.toLocaleString("pt-BR", {maximumFractionDigits: 8});
+  if (!confirm(`Deseja substituir a quantidade atual de “${product.produto}” (${product.quantidade}) pelo resultado ${display}?`)) return;
+  product.quantidade = String(result);
+  saveProducts(); render();
+  $("ruleThreeStatus").textContent = `Quantidade de “${product.produto}” atualizada para ${display}.`;
+});
+$("clearRuleThreeBtn").addEventListener("click", () => {
+  ["ruleThreeA", "ruleThreeB", "ruleThreeC"].forEach(id => $(id).value = "");
+  calculateRuleThree();
+});
+updateRuleThreeProductOptions();
+calculateRuleThree();

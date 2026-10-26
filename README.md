@@ -72,3 +72,18 @@ Ambas são carregadas por CDN e o sistema informa caso a biblioteca não esteja 
 - No formulário, preencha o produto/código (por exemplo `MTX12-12`) e clique em **Auto Mín./Máx.**. O sistema usa as letras iniciais como prefixo e preenche os dois campos se existir regra correspondente.
 - Se não houver regra para o prefixo, o sistema avisa e deixa os campos Mínimo e Máximo como estavam, sem preencher valores automaticamente.
 - A validação da lista rejeita linhas em formato inválido e valores negativos, ou máximo menor que mínimo.
+
+
+## Calculadora de regra de três (v10)
+- Nova seção **Calculadora de regra de três** com três campos de entrada: A, B e C.
+- Calcula automaticamente a regra de três simples direta: se A corresponde a B, então C corresponde a X; fórmula `X = (B × C) ÷ A`.
+- O resultado atualiza enquanto os valores são digitados. O campo A não pode ser zero; se estiver vazio ou inválido, o resultado não é exibido.
+- Inclui botão para limpar os valores e layout responsivo para desktop e celular.
+- Foram refinados espaçamentos, foco de teclado, fundos, cartões e botões para uma aparência mais consistente.
+
+
+## Calculadora de regra de três — versão v11
+- A calculadora usa o formato visual **Se / Dá / Quanto / Dá X**. Exemplo: Se 20 dá 100, quanto 30 dá X. O resultado é calculado automaticamente.
+- É possível selecionar um produto já cadastrado e usar a quantidade atual dele no campo **Quanto**.
+- O botão **Aplicar X à quantidade do produto** substitui a quantidade cadastrada pelo resultado, somente após confirmação explícita.
+- A lista de produtos da calculadora acompanha os cadastros e alterações feitos no sistema.
