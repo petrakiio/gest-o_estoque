@@ -87,3 +87,18 @@ Ambas são carregadas por CDN e o sistema informa caso a biblioteca não esteja 
 - É possível selecionar um produto já cadastrado e usar a quantidade atual dele no campo **Quanto**.
 - O botão **Aplicar X à quantidade do produto** substitui a quantidade cadastrada pelo resultado, somente após confirmação explícita.
 - A lista de produtos da calculadora acompanha os cadastros e alterações feitos no sistema.
+
+
+## Alerta de produtos duplicados (v12)
+- Antes de cadastrar manualmente ou confirmar um cadastro por voz, o sistema verifica se já existe um produto com o mesmo nome.
+- A comparação ignora diferenças entre letras maiúsculas/minúsculas, acentos e espaços extras.
+- Se encontrar um repetido, exibe um alerta com o nome e a fileira já cadastrados e cancela a inclusão, sem alterar a lista.
+- Ao editar um produto, ele não é considerado duplicado de si mesmo.
+- A importação também evita criar novos registros repetidos; a identificação considera o nome do produto, mesmo que a fileira seja diferente.
+
+
+## Página de importação e mapeamento CSV
+
+A versão inclui `importacao.html`, `importacao.css` e `importacao.js`. Acesse pelo item **Importar CSV** no menu ou pelo botão **Mapear CSV** na página inicial. O CSV deve conter `Código;Referência`. Os produtos pendentes e o histórico de itens concluídos são persistidos no `localStorage`; ao salvar o formulário de um item, ele é inserido ou atualizado na mesma chave de produtos utilizada pelo `index.html`, ficando disponível para as exportações existentes.
+
+Campos solicitados no mapeamento: Estoque Atual, Estoque Mínimo e Estoque Máximo (obrigatórios) e Localização (opcional). A referência é exibida apenas para consulta; o Código é utilizado como nome do produto.

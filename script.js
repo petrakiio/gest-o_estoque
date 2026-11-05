@@ -16,6 +16,21 @@ function esc(value){
 }
 function num(v){ return Number(v || 0); }
 
+// Compara nomes ignorando maiúsculas, acentos e espaços duplicados.
+function normalizeProductName(value){
+  return String(value || "").trim().normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ").toLowerCase();
+}
+function findDuplicateProduct(name, ignoreId=""){
+  const key = normalizeProductName(name);
+  if(!key) return null;
+  return products.find(p => p.id !== ignoreId && normalizeProductName(p.produto) === key) || null;
+}
+function alertDuplicateProduct(duplicate){
+  const location = duplicate.fileira ? `\nFileira cadastrada: ${duplicate.fileira}` : "";
+  alert(`Este produto já está cadastrado!\n\nProduto: ${duplicate.produto}${location}\n\nNenhum item foi adicionado.`);
+}
+
 function render(){
   const query = $("search").value.trim().toLowerCase();
   const filtered = products.filter(p =>
@@ -69,6 +84,8 @@ form.addEventListener("submit", e => {
     catalogo: $("catalogo").checked
   };
   const editId = $("editId").value;
+  const duplicate = findDuplicateProduct(produto, editId);
+  if(duplicate){ alertDuplicateProduct(duplicate); return; }
 
   if(editId){
     const i = products.findIndex(p => p.id === editId);
@@ -291,7 +308,7 @@ async function importDocx(file){
 function normalizeLocationKey(value){
   return String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim().replace(/\s+/g,' ');
 }
-function productKey(p){ return `${normalizeLocationKey(p.produto)}||${normalizeLocationKey(p.fileira)}`; }
+function productKey(p){ return normalizeProductName(p.produto); }
 function dedupeProducts(list){
   const map=new Map(); let duplicates=0;
   for(const raw of list){
@@ -315,9 +332,18 @@ function applyImport(imported){
   const mode=chooseImportMode(); if(mode===null)return false; let duplicates=0;
   if(mode==='1'){const result=dedupeProducts([...products,...imported]);products=result.items;duplicates=result.duplicates;}
   else if(mode==='2'){const result=dedupeProducts(imported);products=result.items;duplicates=result.duplicates;}
-  else products=[...products,...imported.map(p=>({...p,id:p.id||uid()}))];
+  else {
+    const existing = new Set(products.map(p=>normalizeProductName(p.produto)));
+    const unique = [];
+    imported.forEach(p=>{
+      const key=normalizeProductName(p.produto);
+      if(!key || existing.has(key)){ duplicates++; return; }
+      existing.add(key); unique.push({...p,id:p.id||uid()});
+    });
+    products=[...products,...unique];
+  }
   saveProducts();render();
-  alert(`Importação concluída.\nProdutos lidos: ${imported.length}\nDuplicados consolidados: ${duplicates}\nTotal na lista: ${products.length}`); return true;
+  alert(`Importação concluída.\nProdutos lidos: ${imported.length}\nDuplicados ignorados/consolidados: ${duplicates}\nTotal na lista: ${products.length}`); return true;
 }
 
 async function importFile(file){
@@ -532,6 +558,8 @@ $("confirmVoiceBtn").addEventListener("click",()=>{
   if(!data.produto||data.quantidade===""||data.minimo===""||data.maximo===""){alert("Confira a interpretação: Produto, Quantidade, Estoque mínimo e Estoque máximo são obrigatórios.");return;}
   if([data.quantidade,data.minimo,data.maximo].some(v=>!Number.isFinite(Number(v))||Number(v)<0)){alert("Quantidade, mínimo e máximo devem ser números iguais ou maiores que zero.");return;}
   if(Number(data.maximo)<Number(data.minimo)){alert("O estoque máximo deve ser maior ou igual ao mínimo.");return;}
+  const duplicate=findDuplicateProduct(data.produto);
+  if(duplicate){ alertDuplicateProduct(duplicate); return; }
   if(!confirm(`Confirma cadastrar este produto?\n\nProduto: ${data.produto}\nQuantidade: ${data.quantidade}\nFileira: ${data.fileira||"(não informada)"}\nMínimo: ${data.minimo}\nMáximo: ${data.maximo}\n\nConfira os dados antes de confirmar.`))return;
   products.push({id:uid(),...data,estoque:false,catalogo:false}); saveProducts(); render();
   Object.values(voiceFieldIds).forEach(id=>$(id).value=""); $("voiceTranscript").value=""; $("voicePreview").classList.add("hidden");

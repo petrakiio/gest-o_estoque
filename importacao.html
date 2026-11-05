@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Importação e mapeamento de produtos por CSV">
+  <title>Importar CSV • Gestão de Produtos</title>
+  <link rel="stylesheet" href="style.css"><link rel="stylesheet" href="importacao.css">
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand"><div class="brand-mark">GP</div><div><strong>Gestão</strong><span>de Produtos</span></div></div>
+    <nav>
+      <a class="nav-item" href="index.html"><span>▦</span> Página inicial</a>
+      <a class="nav-item active" href="importacao.html"><span>⇧</span> Importar CSV</a>
+    </nav>
+    <div class="sidebar-footer"><span class="dot"></span> Dados salvos neste navegador</div>
+  </aside>
+  <main class="main import-main">
+    <header class="topbar">
+      <div><p class="eyebrow">IMPORTAÇÃO DE DADOS</p><h1>Importar e mapear CSV</h1><p class="page-intro">Carregue a planilha, confira os códigos e complete os dados de estoque antes de enviar para a lista principal.</p></div>
+      <div class="export-actions"><a class="btn btn-light" href="index.html">← Voltar ao início</a></div>
+    </header>
+    <section class="panel csv-upload-panel">
+      <div class="panel-heading"><div><h2>1. Selecione o arquivo CSV</h2><p>O arquivo deve conter as colunas <strong>Código</strong> e <strong>Referência</strong>, separadas por ponto e vírgula.</p></div></div>
+      <div class="csv-upload-content">
+        <label class="csv-file-label"> <span class="upload-symbol">⇧</span><span><strong>Escolher arquivo .CSV</strong><small>Exemplo: Código;Referência — 2360;76X95</small></span><input id="csvFile" type="file" accept=".csv,text/csv"></label>
+        <div class="csv-upload-actions"><button id="clearPendingBtn" class="btn btn-light" type="button">Limpar importação pendente</button><span id="csvStatus" role="status">Nenhum arquivo novo selecionado.</span></div>
+      </div>
+    </section>
+    <section class="stats-grid import-stats">
+      <article class="stat-card"><span class="stat-icon">▤</span><div><small>Importados no CSV</small><strong id="csvTotal">0</strong></div></article>
+      <article class="stat-card"><span class="stat-icon">◷</span><div><small>Pendentes</small><strong id="pendingTotal">0</strong></div></article>
+      <article class="stat-card"><span class="stat-icon">✓</span><div><small>Concluídos nesta lista</small><strong id="completedTotal">0</strong></div></article>
+    </section>
+    <section class="panel">
+      <div class="panel-heading import-list-heading"><div><h2>2. Produtos para completar</h2><p>O código será usado como nome do produto. A referência é apenas informativa.</p></div><input id="pendingSearch" class="search" type="search" placeholder="⌕ Buscar código ou referência..."></div>
+      <div id="pendingList" class="pending-list"></div>
+      <div id="pendingEmpty" class="empty">Nenhum produto pendente. Selecione um arquivo CSV para começar.</div>
+    </section>
+    <footer>Gestão de Produtos • importação local • progresso salvo automaticamente</footer>
+  </main>
+</div>
+<div id="productModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <form id="mappingForm" class="mapping-modal">
+    <div class="modal-heading"><div><p class="eyebrow">CONCLUIR PRODUTO</p><h2 id="modalTitle">Preencher estoque</h2><p id="modalSubtitle"></p></div><button id="closeModalBtn" class="modal-close" type="button" aria-label="Fechar">×</button></div>
+    <input id="mappingId" type="hidden"><div class="mapping-reference" id="mappingReference"></div>
+    <div class="mapping-grid">
+      <label>Nome do produto (Código)<input id="mappingCode" readonly></label>
+      <label>Estoque Atual *<input id="mappingQuantity" type="number" min="0" step="any" required placeholder="0"></label>
+      <label>Estoque Mínimo *<input id="mappingMinimum" type="number" min="0" step="any" required placeholder="0"></label>
+      <label>Estoque Máximo *<input id="mappingMaximum" type="number" min="0" step="any" required placeholder="0"></label>
+      <label class="mapping-location">Localização (Loc)<input id="mappingLocation" maxlength="60" placeholder="Ex.: P1-02"></label>
+    </div>
+    <div class="modal-actions"><button id="cancelMappingBtn" class="btn btn-light" type="button">Cancelar</button><button class="btn btn-primary" type="submit">Salvar e enviar para a lista principal</button></div>
+  </form>
+</div>
+<script src="importacao.js"></script>
+</body></html>
