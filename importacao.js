@@ -2,10 +2,12 @@
 const PRODUCTS_KEY = "gestao_produtos_v1";
 const PENDING_KEY = "gestao_produtos_csv_pending_v1";
 const COMPLETED_KEY = "gestao_produtos_csv_completed_v1";
+const QUICK_FILTER_KEY = "gestao_produtos_csv_quick_keywords_v1";
 const $ = id => document.getElementById(id);
 let pending = loadPending();
 function loadCompleted(){ try { const v=JSON.parse(localStorage.getItem(COMPLETED_KEY)); return Array.isArray(v)?v:[]; } catch(e){ return []; } }
 let completed = loadCompleted();
+let quickKeywords = loadQuickKeywords();
 let activePendingId = null;
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
 function esc(value){ return String(value ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
@@ -13,6 +15,9 @@ function normalize(value){ return String(value ?? "").trim().normalize("NFD").re
 function loadProducts(){ try { const v=JSON.parse(localStorage.getItem(PRODUCTS_KEY)); return Array.isArray(v)?v:[]; } catch(e){ return []; } }
 function saveProducts(items){ localStorage.setItem(PRODUCTS_KEY,JSON.stringify(items)); }
 function loadPending(){ try { const v=JSON.parse(localStorage.getItem(PENDING_KEY)); return Array.isArray(v)?v:[]; } catch(e){ return []; } }
+function loadQuickKeywords(){ try { const v=JSON.parse(localStorage.getItem(QUICK_FILTER_KEY)); return Array.isArray(v)?v.filter(x=>typeof x==="string"):[]; } catch(e){ return []; } }
+function saveQuickKeywords(){ localStorage.setItem(QUICK_FILTER_KEY,JSON.stringify(quickKeywords)); }
+function parseQuickKeywords(value){ return [...new Set(String(value||"").split(",").map(x=>normalize(x)).filter(Boolean))]; }
 function savePending(){ localStorage.setItem(PENDING_KEY,JSON.stringify(pending)); }
 function saveCompleted(){ localStorage.setItem(COMPLETED_KEY,JSON.stringify(completed)); }
 function parseCSVLine(line, delimiter){
@@ -47,7 +52,14 @@ function parseCSV(text){
 }
 function render(){
   const q=normalize($("pendingSearch").value);
-  const visible=pending.filter(p=>normalize(p.codigo+" "+p.referencia).includes(q));
+  const field=$("pendingFilterField").value;
+  const visible=pending.filter(p=>{
+    const codigo=normalize(p.codigo), referencia=normalize(p.referencia);
+    const matchesText=!q || (field==="codigo" ? codigo.includes(q) : field==="referencia" ? referencia.includes(q) : (codigo+" "+referencia).includes(q));
+    const matchesQuick=!quickKeywords.length || quickKeywords.some(keyword=>codigo.includes(keyword)||referencia.includes(keyword));
+    return matchesText && matchesQuick;
+  });
+  $("quickFilterStatus").textContent=quickKeywords.length ? `${quickKeywords.length} palavra(s)-chave ativa(s): ${quickKeywords.join(", ")}` : "Nenhuma palavra-chave configurada.";
   $("pendingList").innerHTML=visible.map(p=>{
     const existing=loadProducts().find(x=>normalize(x.produto)===normalize(p.codigo));
     const label=existing?"Editar dados":"Adicionar";
@@ -88,6 +100,17 @@ $("csvFile").addEventListener("change",async e=>{
 });
 $("pendingList").addEventListener("click",e=>{const btn=e.target.closest("[data-open]");if(btn)openMapping(btn.dataset.open);});
 $("pendingSearch").addEventListener("input",render);
+$("pendingFilterField").addEventListener("change",render);
+$("quickKeywords").value=quickKeywords.join(", ");
+$("quickKeywords").addEventListener("change",()=>{
+  quickKeywords=parseQuickKeywords($("quickKeywords").value);
+  $("quickKeywords").value=quickKeywords.join(", ");
+  saveQuickKeywords(); render();
+});
+$("quickKeywords").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("quickKeywords").dispatchEvent(new Event("change"));}});
+$("clearQuickFilterBtn").addEventListener("click",()=>{
+  quickKeywords=[]; $("quickKeywords").value=""; saveQuickKeywords(); render();
+});
 $("mappingForm").addEventListener("submit",e=>{
   e.preventDefault();
   const item=pending.find(p=>p.id===activePendingId); if(!item)return;

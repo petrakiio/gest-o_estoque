@@ -34,7 +34,18 @@
       <article class="stat-card"><span class="stat-icon">✓</span><div><small>Concluídos nesta lista</small><strong id="completedTotal">0</strong></div></article>
     </section>
     <section class="panel">
-      <div class="panel-heading import-list-heading"><div><h2>2. Produtos para completar</h2><p>O código será usado como nome do produto. A referência é apenas informativa.</p></div><input id="pendingSearch" class="search" type="search" placeholder="⌕ Buscar código ou referência..."></div>
+      <div class="quick-filter-box">
+        <div class="quick-filter-copy">
+          <strong>Filtros rápidos por palavras-chave</strong>
+          <small>Digite termos separados por vírgula. Ex.: PX, APX, PTX. Serão exibidos produtos cujo código ou referência contenha pelo menos um dos termos.</small>
+        </div>
+        <div class="quick-filter-controls">
+          <input id="quickKeywords" type="text" placeholder="PX, APX, PTX" aria-label="Palavras-chave dos filtros rápidos">
+          <button id="clearQuickFilterBtn" class="btn btn-light" type="button">Limpar</button>
+        </div>
+        <span id="quickFilterStatus" class="quick-filter-status" aria-live="polite">Nenhuma palavra-chave configurada.</span>
+      </div>
+      <div class="panel-heading import-list-heading"><div><h2>2. Produtos para completar</h2><p>O código será usado como nome do produto. A referência é apenas informativa.</p></div><div class="pending-filters"><select id="pendingFilterField" aria-label="Filtrar por campo"><option value="todos">Todos os campos</option><option value="codigo">Somente código</option><option value="referencia">Somente referência</option></select><input id="pendingSearch" class="search" type="search" placeholder="⌕ Digite para buscar..."></div></div>
       <div id="pendingList" class="pending-list"></div>
       <div id="pendingEmpty" class="empty">Nenhum produto pendente. Selecione um arquivo CSV para começar.</div>
     </section>

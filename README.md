@@ -102,3 +102,17 @@ Ambas são carregadas por CDN e o sistema informa caso a biblioteca não esteja 
 A versão inclui `importacao.html`, `importacao.css` e `importacao.js`. Acesse pelo item **Importar CSV** no menu ou pelo botão **Mapear CSV** na página inicial. O CSV deve conter `Código;Referência`. Os produtos pendentes e o histórico de itens concluídos são persistidos no `localStorage`; ao salvar o formulário de um item, ele é inserido ou atualizado na mesma chave de produtos utilizada pelo `index.html`, ficando disponível para as exportações existentes.
 
 Campos solicitados no mapeamento: Estoque Atual, Estoque Mínimo e Estoque Máximo (obrigatórios) e Localização (opcional). A referência é exibida apenas para consulta; o Código é utilizado como nome do produto.
+
+
+## Versão 14 — Filtro por código ou referência
+
+Na página `importacao.html`, a lista de produtos pendentes agora possui um seletor de campo de pesquisa: `Todos os campos`, `Somente código` ou `Somente referência`. A busca é atualizada em tempo real e não altera os dados armazenados. O filtro também funciona com trechos do código ou da referência e ignora diferenças entre maiúsculas/minúsculas e acentos.
+
+
+## v15 — Filtros rápidos por palavras-chave na importação CSV
+- Adicionado campo configurável de palavras-chave na página `importacao.html`.
+- Informe termos separados por vírgula, por exemplo: `PX, APX, PTX`.
+- A lista mostra os produtos cujo código ou referência contenha pelo menos um dos termos informados.
+- O filtro rápido funciona em conjunto com a busca comum por código/referência.
+- A configuração fica salva no `localStorage` e continua ativa após atualizar a página.
+- Botão Limpar remove as palavras-chave configuradas sem apagar produtos pendentes.
